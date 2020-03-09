@@ -2,9 +2,9 @@ package main
 
 import (
 	"fmt"
-	"github.com/charSLee013/gocker/cgroups/subsystems"
-	"github.com/charSLee013/gocker/container"
-	"github.com/charSLee013/gocker/network"
+	"github.com/charSLee013/mydocker/cgroups/subsystems"
+	"github.com/charSLee013/mydocker/container"
+	"github.com/charSLee013/mydocker/network"
 	"github.com/urfave/cli/v2"
 	"os"
 )
