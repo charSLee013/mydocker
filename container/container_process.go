@@ -34,7 +34,7 @@ func NewParentProcess(tty bool, containerName, volume, imageName string, envSlic
 	readPipe, writePipe, err := NewPipe()
 	if err != nil {
 		Sugar.Errorf("New pip error %v", err)
-		return nil.nil
+		return nil, nil
 	}
 
 	initCmd, err := os.Readlink("/proc/self/exe")
@@ -71,7 +71,11 @@ func NewParentProcess(tty bool, containerName, volume, imageName string, envSlic
 
 	cmd.ExtraFiles = []*os.File{readPipe}
 	cmd.Env = append(os.Environ(), envSlice...)
-	NewWOr
+	NewWorkSpace(volume, imageName, containerName)
+	cmd.Dir = fmt.Sprintf(MntUrl, containerName)
+	cmd.Dir = fmt.Sprintf(MntUrl, containerName)
+
+	return cmd, writePipe
 }
 
 func NewPipe() (*os.File, *os.File, error) {

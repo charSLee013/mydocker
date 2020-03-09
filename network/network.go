@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/charSLee013/mydocker/container"
+	"github.com/vishvananda/netlink"
+	"github.com/vishvananda/netns"
 	"go.uber.org/zap"
 	"net"
 	"os"
@@ -48,7 +50,7 @@ var (
 	networks           = map[string]*Network{}
 )
 
-func Init(sugar *zap.SugaredLogger) {
+func Init(sugar *zap.SugaredLogger) error {
 	Sugar = sugar
 	var bridgeDriver = BridgeNetworkDriver{}
 	drivers[bridgeDriver.Name()] = &bridgeDriver
@@ -73,7 +75,7 @@ func Init(sugar *zap.SugaredLogger) {
 			Driver:  "",
 		}
 
-		if err := nw.load(); err != nil {
+		if err := nw.load(nwPath); err != nil {
 			Sugar.Errorf("error load network : %s", err)
 		}
 

@@ -36,7 +36,12 @@ func MountVolume(volumeURLs []string, containerName string) error {
 		Sugar.Infof("Mkdir container dir %s error , %v", containerVolumeURL, err)
 	}
 	dirs := "dirs=" + parentUrl
-	_, err := exec.Command("mount", "-t", "")
+	_, err := exec.Command("mount", "-t", "aufs", "-o", dirs, "none", containerVolumeURL).CombinedOutput()
+	if err != nil {
+		Sugar.Errorf("Mount volume failed. %v", err)
+		return err
+	}
+	return nil
 }
 
 //Decompression tar image

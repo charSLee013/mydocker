@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"github.com/charSLee013/mydocker/container"
 	"io/ioutil"
@@ -46,4 +47,22 @@ func ListContainers() {
 		Sugar.Errorf("Flush error %v", err)
 		return
 	}
+}
+
+func getContainerInfo(file os.FileInfo) (*container.ContainerInfo, error) {
+	containerName := file.Name()
+	configFileDir := fmt.Sprintf(container.DefaultInfoLocation, containerName)
+	configFileDir = configFileDir + container.ConfigName
+	content, err := ioutil.ReadFile(configFileDir)
+	if err != nil {
+		Sugar.Errorf("Read file %s error %v", configFileDir, err)
+		return nil, err
+	}
+	var containerInfo container.ContainerInfo
+	if err := json.Unmarshal(content, &containerInfo); err != nil {
+		Sugar.Errorf("Json unmarshal error %v", err)
+		return nil, err
+	}
+
+	return &containerInfo, nil
 }

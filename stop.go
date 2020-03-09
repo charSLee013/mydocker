@@ -28,7 +28,25 @@ func stopContainer(containerName string) {
 		return
 	}
 
-	containerInfo, err := getContainerInfo
+	containerInfo, err := getContainerInfoByName(containerName)
+	if err != nil {
+		Sugar.Error("Get container %s into error %v", containerName, err)
+		return
+	}
+
+	containerInfo.Status = container.STOP
+	containerInfo.Pid = ""
+	newContentBytes, err := json.Marshal(containerInfo)
+	if err != nil {
+		Sugar.Errorf("Json marshal %s error %v", containerName, err)
+		return
+	}
+
+	dirURL := fmt.Sprintf(container.DefaultInfoLocation, containerName)
+	configFilePath := dirURL + container.ConfigName
+	if err := ioutil.WriteFile(configFilePath, newContentBytes, 0622); err != nil {
+		Sugar.Errorf("Write file %s error ")
+	}
 
 }
 
