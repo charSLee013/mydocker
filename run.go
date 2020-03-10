@@ -46,7 +46,7 @@ func Run(tty bool, comArray []string, res *subsystems.ResourceConfig, containerN
 
 	if nw != "" {
 		// config container network
-		network.Init(Sugar)
+		network.Init()
 		containerInfo := &container.ContainerInfo{
 			Id:          containerID,
 			Pid:         strconv.Itoa(parent.Process.Pid),

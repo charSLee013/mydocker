@@ -16,7 +16,7 @@ var (
 	ContainerLogFile    string = "container.log"
 	RootUrl             string = "/var/lib/gocker"
 	MntUrl              string = "/var/lib/gocker/mnt/%s"
-	WriteLayerUrl       string = "/var/lib/writeLayer/%s"
+	WriteLayerUrl       string = "/var/lib/gocker/writeLayer/%s"
 )
 
 type ContainerInfo struct {

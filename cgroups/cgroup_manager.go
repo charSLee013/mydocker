@@ -12,16 +12,16 @@ type CgroupManager struct {
 	Resource *subsystems.ResourceConfig
 }
 
+var Sugar *zap.SugaredLogger
+
+func InitLog(sugar *zap.SugaredLogger) {
+	Sugar = sugar
+}
+
 func NewCgroupManager(path string) *CgroupManager {
 	return &CgroupManager{
 		Path: path,
 	}
-}
-
-var Sugar *zap.SugaredLogger
-
-func Init(sugar *zap.SugaredLogger) {
-	Sugar = sugar
 }
 
 // 将进程pid加入到这个cgroup中

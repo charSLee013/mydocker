@@ -15,10 +15,6 @@ var Sugar *zap.SugaredLogger
 const usage = "docker-cli is a simple container runtime inmplementation."
 
 func main() {
-	cgroups.Init(Sugar)
-	container.Init(Sugar)
-	network.Init(Sugar)
-
 	app := cli.NewApp()
 	app.Name = "docker-cli"
 	app.Usage = usage
@@ -35,17 +31,18 @@ func main() {
 		&networkCommand,
 	}
 
-	app.Before = func(context *cli.Context) error {
-		// set logger
-		logger,err := InitLog()
-		if err != nil {
-			return err
-		}
-		Sugar = logger.Sugar()
-		return nil
+	// set logger
+	logger, err := InitLog()
+	if err != nil {
+		log.Fatal(err)
 	}
+	Sugar = logger.Sugar()
 
-	if err := app.Run(os.Args);err != nil {
+	cgroups.InitLog(Sugar)
+	container.InitLog(Sugar)
+	network.InitLog(Sugar)
+
+	if err := app.Run(os.Args); err != nil {
 		log.Fatal(err)
 	}
 }

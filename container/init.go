@@ -13,7 +13,7 @@ import (
 
 var Sugar *zap.SugaredLogger
 
-func Init(sugar *zap.SugaredLogger) {
+func InitLog(sugar *zap.SugaredLogger) {
 	Sugar = sugar
 }
 

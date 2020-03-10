@@ -50,8 +50,11 @@ var (
 	networks           = map[string]*Network{}
 )
 
-func Init(sugar *zap.SugaredLogger) error {
+func InitLog(sugar *zap.SugaredLogger) {
 	Sugar = sugar
+}
+
+func Init() error {
 	var bridgeDriver = BridgeNetworkDriver{}
 	drivers[bridgeDriver.Name()] = &bridgeDriver
 
@@ -131,6 +134,7 @@ func (nw *Network) remove(dumpPath string) error {
 }
 
 func (nw *Network) load(dumpPath string) error {
+	Sugar.Debugf("netwrok dumpPath : %v", dumpPath)
 	nwConfigFile, err := os.Open(dumpPath)
 	defer nwConfigFile.Close()
 	if err != nil {
