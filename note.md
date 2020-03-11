@@ -6,9 +6,10 @@
 
 ##### Create a overlay filesystem
 
+**mountOverlay2.sh**
 ```bash
 #!/bin/bash
-## need kernel 4.0+
+## need kernel 4.0+ or mac osx 10.13+
 
 ## global set
 overlayDir="/var/lib/gocker/overlay"
@@ -20,10 +21,10 @@ workdir="$overlayDir/$imageSha256/workdir"
 mergeddir="$overlayDir/$imageSha256/mergeddir"
 
 ## clean
-umount $mergeddir > /dev/null 2>&1
+sudo umount $mergeddir > /dev/null 2>&1
 
 ## create floder
-mkdir -p $lowerdir $upperdir $workdir $mergeddir
+sudo mkdir -p $lowerdir $upperdir $workdir $mergeddir
 
 ## mount
 sudo mount -t overlay -o \
@@ -49,17 +50,17 @@ workdir="$overlayDir/$imageSha256/workdir"
 mergeddir="$overlayDir/$imageSha256/mergeddir"
 
 ## clean
-find $overlayDir -type f | xargs rm -f > /dev/null 2>&1
-bash ./removeOverlay2.sh
+sudo find $overlayDir -type f | xargs rm -f > /dev/null 2>&1
+sudo bash ./removeOverlay2.sh
 
 ## create
-bash ./mountOverlay2.sh
+sudo bash ./mountOverlay2.sh
 
 ## write a file to lowerdir
-echo 'Hello World' > $lowerdir/a.txt
+sudo echo 'Hello World' > $lowerdir/a.txt
 
 ## check consistency
-diff $lowerdir/a.txt $mergeddir/a.txt
+sudo diff $lowerdir/a.txt $mergeddir/a.txt
  if [ $? != 0 ]
 
 then
@@ -73,14 +74,15 @@ else
 fi
 
 ## change file from upperdir
-echo 'Hi' >> $mergeddir/a.txt
+sudo echo 'Hi' >> $mergeddir/a.txt
 
 ## check again
-diff $lowerdir/a.txt $mergeddir/a.txt
+sudo diff $lowerdir/a.txt $mergeddir/a.txt
 ```
 
 ##### remove overlay filesystem
 
+**removeOverlay2.sh**
 ```bash
 #!/bin/bash
 
@@ -94,8 +96,8 @@ mergeddir="$overlayDir/$imageSha256/mergeddir"
 
 
 ## umount
-umount $mergeddir > /dev/null 2>&1
+sudo umount $mergeddir > /dev/null 2>&1
 
 ## delete folder
-rm -rf "$overlayDir/$imageSha256"
+sudo rm -rf "$overlayDir/$imageSha256"
 ```
