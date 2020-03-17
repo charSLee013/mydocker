@@ -1,23 +1,21 @@
-package container
+package driver
 
 import (
-	"fmt"
 	"os"
 	"os/exec"
 	"syscall"
 )
 
-var (
+const (
 	RUNNING             string = "running"
 	STOP                string = "stopped"
-	Exit                string = "exited"
+	EXIT                string = "exited"
 	DefaultInfoLocation string = "/var/lib/gocker/%s/"
 	ConfigName          string = "config.json"
-	ContainerLogFile    string = "container.log"
-	RootUrl             string = "/var/lib/gocker"
-
-	MntUrl              string = "/var/lib/gocker/mnt/%s"
-	WriteLayerUrl       string = "/var/lib/gocker/writeLayer/%s"
+	ContainerSugarFile  string = "container.Sugar"
+	RootUrl             string = "/var/lib/gocker/"
+	Dirver              string = "overlay"
+	OverlayDir          string = "/var/lib/gocker/overlay/"
 )
 
 type ContainerInfo struct {
@@ -34,10 +32,9 @@ type ContainerInfo struct {
 func NewParentProcess(tty bool, containerName, volume, imageName string, envSlice []string) (*exec.Cmd, *os.File) {
 	readPipe, writePipe, err := NewPipe()
 	if err != nil {
-		Sugar.Errorf("New pip error %v", err)
+		Sugar.Errorf("New pipe error %v", err)
 		return nil, nil
 	}
-
 	initCmd, err := os.Readlink("/proc/self/exe")
 	if err != nil {
 		Sugar.Errorf("get init process error %v", err)
@@ -46,7 +43,8 @@ func NewParentProcess(tty bool, containerName, volume, imageName string, envSlic
 
 	cmd := exec.Command(initCmd, "init")
 	cmd.SysProcAttr = &syscall.SysProcAttr{
-		Cloneflags: syscall.CLONE_NEWUTS | syscall.CLONE_NEWPID | syscall.CLONE_NEWNS | syscall.CLONE_NEWNET | syscall.CLONE_NEWIPC,
+		Cloneflags: syscall.CLONE_NEWUTS | syscall.CLONE_NEWPID | syscall.CLONE_NEWNS |
+			syscall.CLONE_NEWNET | syscall.CLONE_NEWIPC,
 	}
 
 	if tty {
@@ -59,23 +57,19 @@ func NewParentProcess(tty bool, containerName, volume, imageName string, envSlic
 			Sugar.Errorf("NewParentProcess mkdir %s error %v", dirURL, err)
 			return nil, nil
 		}
-
-		stdLogFilePath := dirURL + ContainerLogFile
-		stdLogFile, err := os.Create(stdLogFilePath)
-
+		stdSugarFilePath := dirURL + ContainerSugarFile
+		stdSugarFile, err := os.Create(stdSugarFilePath)
 		if err != nil {
-			Sugar.Errorf("NewParentProcess create file %s error %v", stdLogFilePath, err)
+			Sugar.Errorf("NewParentProcess create file %s error %v", stdSugarFilePath, err)
 			return nil, nil
 		}
-		cmd.Stdout = stdLogFile
+		cmd.Stdout = stdSugarFile
 	}
 
 	cmd.ExtraFiles = []*os.File{readPipe}
 	cmd.Env = append(os.Environ(), envSlice...)
 	NewWorkSpace(volume, imageName, containerName)
 	cmd.Dir = fmt.Sprintf(MntUrl, containerName)
-	cmd.Dir = fmt.Sprintf(MntUrl, containerName)
-
 	return cmd, writePipe
 }
 

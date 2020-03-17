@@ -1,4 +1,4 @@
-package container
+package driver
 
 import (
 	"fmt"
@@ -13,8 +13,28 @@ import (
 
 var Sugar *zap.SugaredLogger
 
-func InitLog(sugar *zap.SugaredLogger) {
+func InitSugar(sugar *zap.SugaredLogger) {
 	Sugar = sugar
+}
+
+func RunContainerInitProcess() error {
+	cmdArray := readUserCommand()
+	if cmdArray == nil || len(cmdArray) == 0 {
+		return fmt.Errorf("Run container get user command error, cmdArray is nil")
+	}
+
+	setUpMount()
+
+	path, err := exec.LookPath(cmdArray[0])
+	if err != nil {
+		Sugar.Errorf("Exec loop path error %v", err)
+		return err
+	}
+	Sugar.Infof("Find path %s", path)
+	if err := syscall.Exec(path, cmdArray[0:], os.Environ()); err != nil {
+		Sugar.Errorf(err.Error())
+	}
+	return nil
 }
 
 func readUserCommand() []string {
@@ -27,6 +47,25 @@ func readUserCommand() []string {
 	}
 	msgStr := string(msg)
 	return strings.Split(msgStr, " ")
+}
+
+/**
+Init 挂载点
+*/
+func setUpMount() {
+	pwd, err := os.Getwd()
+	if err != nil {
+		Sugar.Errorf("Get current location error %v", err)
+		return
+	}
+	Sugar.Infof("Current location is %s", pwd)
+	pivotRoot(pwd)
+
+	//mount proc
+	defaultMountFlags := syscall.MS_NOEXEC | syscall.MS_NOSUID | syscall.MS_NODEV
+	syscall.Mount("proc", "/proc", "proc", uintptr(defaultMountFlags), "")
+
+	syscall.Mount("tmpfs", "/dev", "tmpfs", syscall.MS_NOSUID|syscall.MS_STRICTATIME, "mode=755")
 }
 
 func pivotRoot(root string) error {
@@ -59,40 +98,4 @@ func pivotRoot(root string) error {
 	}
 	// 删除临时文件夹
 	return os.Remove(pivotDir)
-}
-
-func setUpMount() {
-	pwd, err := os.Getwd()
-	if err != nil {
-		Sugar.Errorf("Get current location error %v", err)
-		return
-	}
-
-	Sugar.Infof("Current location is %s", pwd)
-	pivotRoot(pwd)
-
-	// mount /proc
-	defaultMountFlags := syscall.MS_NOEXEC | syscall.MS_NOSUID | syscall.MS_NODEV
-	syscall.Mount("proc", "/proc", "proc", uintptr(defaultMountFlags), "")
-	syscall.Mount("tmpfs", "/dev", "tmpfs", syscall.MS_NOSUID|syscall.MS_STRICTATIME, "mode=755")
-}
-
-func RunContainerInitProcess() error {
-	cmdArray := readUserCommand()
-	if cmdArray == nil || len(cmdArray) == 0 {
-		return fmt.Errorf("Run container get user command error, command is nil")
-	}
-
-	setUpMount()
-
-	path, err := exec.LookPath(cmdArray[0])
-	if err != nil {
-		Sugar.Errorf("Exec loop path error %v", err)
-	}
-
-	Sugar.Infof("Find path %s", path)
-	if err := syscall.Exec(path, cmdArray[0:], os.Environ()); err != nil {
-		Sugar.Errorf(err.Error())
-	}
-	return nil
 }
