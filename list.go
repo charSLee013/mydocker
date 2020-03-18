@@ -3,14 +3,14 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/charSLee013/mydocker/container"
+	"github.com/charSLee013/mydocker/driver"
 	"io/ioutil"
 	"os"
 	"text/tabwriter"
 )
 
 func ListContainers() {
-	dirURL := fmt.Sprintf(container.DefaultInfoLocation, "")
+	dirURL := fmt.Sprintf(driver.DefaultInfoLocation, "")
 	dirURL = dirURL[:len(dirURL)-1]
 	files, err := ioutil.ReadDir(dirURL)
 	if err != nil {
@@ -18,7 +18,7 @@ func ListContainers() {
 		return
 	}
 
-	var containers []*container.ContainerInfo
+	var containers []*driver.ContainerInfo
 	for _, file := range files {
 		if file.Name() == "network" {
 			continue
@@ -49,16 +49,16 @@ func ListContainers() {
 	}
 }
 
-func getContainerInfo(file os.FileInfo) (*container.ContainerInfo, error) {
+func getContainerInfo(file os.FileInfo) (*driver.ContainerInfo, error) {
 	containerName := file.Name()
-	configFileDir := fmt.Sprintf(container.DefaultInfoLocation, containerName)
-	configFileDir = configFileDir + container.ConfigName
+	configFileDir := fmt.Sprintf(driver.DefaultInfoLocation, containerName)
+	configFileDir = configFileDir + driver.ConfigName
 	content, err := ioutil.ReadFile(configFileDir)
 	if err != nil {
 		Sugar.Errorf("Read file %s error %v", configFileDir, err)
 		return nil, err
 	}
-	var containerInfo container.ContainerInfo
+	var containerInfo driver.ContainerInfo
 	if err := json.Unmarshal(content, &containerInfo); err != nil {
 		Sugar.Errorf("Json unmarshal error %v", err)
 		return nil, err

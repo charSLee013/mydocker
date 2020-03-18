@@ -2,7 +2,7 @@ package main
 
 import (
 	"github.com/charSLee013/mydocker/cgroups"
-	"github.com/charSLee013/mydocker/container"
+	"github.com/charSLee013/mydocker/driver"
 	"github.com/charSLee013/mydocker/network"
 	"github.com/urfave/cli/v2"
 	"go.uber.org/zap"
@@ -39,7 +39,7 @@ func main() {
 	Sugar = logger.Sugar()
 
 	cgroups.InitLog(Sugar)
-	container.InitLog(Sugar)
+	driver.InitLog(Sugar)
 	network.InitLog(Sugar)
 
 	if err := app.Run(os.Args); err != nil {

@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 	"github.com/charSLee013/mydocker/cgroups/subsystems"
-	"github.com/charSLee013/mydocker/container"
+	"github.com/charSLee013/mydocker/driver"
 	"github.com/charSLee013/mydocker/network"
 	"github.com/urfave/cli/v2"
 	"os"
@@ -96,7 +96,7 @@ var initCommand = cli.Command{
 	Usage: "Init container process run user`s process in container",
 	Action: func(context *cli.Context) error {
 		Sugar.Infow("Init come on")
-		err := container.RunContainerInitProcess()
+		err := driver.RunContainerInitProcess()
 		return err
 	},
 }

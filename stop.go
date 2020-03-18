@@ -3,7 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/charSLee013/mydocker/container"
+	"github.com/charSLee013/mydocker/driver"
 	"io/ioutil"
 	"os"
 	"strconv"
@@ -34,7 +34,7 @@ func stopContainer(containerName string) {
 		return
 	}
 
-	containerInfo.Status = container.STOP
+	containerInfo.Status = driver.STOP
 	containerInfo.Pid = ""
 	newContentBytes, err := json.Marshal(containerInfo)
 	if err != nil {
@@ -42,24 +42,24 @@ func stopContainer(containerName string) {
 		return
 	}
 
-	dirURL := fmt.Sprintf(container.DefaultInfoLocation, containerName)
-	configFilePath := dirURL + container.ConfigName
+	dirURL := fmt.Sprintf(driver.DefaultInfoLocation, containerName)
+	configFilePath := dirURL + driver.ConfigName
 	if err := ioutil.WriteFile(configFilePath, newContentBytes, 0622); err != nil {
 		Sugar.Errorf("Write file %s error ")
 	}
 
 }
 
-func getContainerInfoByName(containerName string) (*container.ContainerInfo, error) {
-	dirURL := fmt.Sprintf(container.DefaultInfoLocation, containerName)
-	configFilePath := dirURL + container.ConfigName
+func getContainerInfoByName(containerName string) (*driver.ContainerInfo, error) {
+	dirURL := fmt.Sprintf(driver.DefaultInfoLocation, containerName)
+	configFilePath := dirURL + driver.ConfigName
 	contentBytes, err := ioutil.ReadFile(configFilePath)
 	if err != nil {
 		Sugar.Errorf("Read file %s error %v", configFilePath, err)
 		return nil, err
 	}
 
-	var containerInfo container.ContainerInfo
+	var containerInfo driver.ContainerInfo
 	if err := json.Unmarshal(contentBytes, &containerInfo); err != nil {
 		Sugar.Errorf("GetContainerInfoByName unmarshal error %v", err)
 		return nil, err
@@ -74,14 +74,14 @@ func removeContainer(containerName string) {
 		return
 	}
 
-	if containerInfo.Status != container.STOP {
+	if containerInfo.Status != driver.STOP {
 		Sugar.Errorf("Couldn't remove running container")
 		return
 	}
-	dirURL := fmt.Sprintf(container.DefaultInfoLocation, containerName)
+	dirURL := fmt.Sprintf(driver.DefaultInfoLocation, containerName)
 	if err := os.RemoveAll(dirURL); err != nil {
 		Sugar.Errorf("Remove file %s error %v", dirURL, err)
 		return
 	}
-	container.DeleteWorkSpace(containerInfo.Volume, containerName)
+	driver.DeleteWorkSpace(containerInfo.Volume, containerName)
 }

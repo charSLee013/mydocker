@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"github.com/charSLee013/mydocker/cgroups"
 	"github.com/charSLee013/mydocker/cgroups/subsystems"
-	"github.com/charSLee013/mydocker/container"
+	"github.com/charSLee013/mydocker/driver"
 	"github.com/charSLee013/mydocker/network"
 	"math/rand"
 	"os"
@@ -21,7 +21,7 @@ func Run(tty bool, comArray []string, res *subsystems.ResourceConfig, containerN
 		containerName = containerID
 	}
 
-	parent, writePipe := container.NewParentProcess(tty, containerName, volume, imageName, envSlice)
+	parent, writePipe := driver.NewParentProcess(tty, containerName, volume, imageName, envSlice)
 	if parent == nil {
 		Sugar.Errorf("New parent process error")
 		return
@@ -47,7 +47,7 @@ func Run(tty bool, comArray []string, res *subsystems.ResourceConfig, containerN
 	if nw != "" {
 		// config container network
 		network.Init()
-		containerInfo := &container.ContainerInfo{
+		containerInfo := &driver.ContainerInfo{
 			Id:          containerID,
 			Pid:         strconv.Itoa(parent.Process.Pid),
 			Name:        containerName,
@@ -59,12 +59,13 @@ func Run(tty bool, comArray []string, res *subsystems.ResourceConfig, containerN
 		}
 	}
 
+	// 传递参数给容器内实际运行进程
 	sendInitCommand(comArray, writePipe)
 
 	if tty {
 		parent.Wait()
 		deleteContainerInfo(containerName)
-		container.DeleteWorkSpace(volume, containerName)
+		driver.DeleteWorkSpace(volume, containerName)
 	}
 
 }
@@ -79,12 +80,12 @@ func sendInitCommand(comArray []string, writePipe *os.File) {
 func recordContainerInfo(containerPID int, commandArray []string, containerName, id, volume string) (string, error) {
 	createTime := time.Now().Format("2006-01-02 15:04:05")
 	command := strings.Join(commandArray, "")
-	containerInfo := &container.ContainerInfo{
+	containerInfo := &driver.ContainerInfo{
 		Id:          id,
 		Pid:         strconv.Itoa(containerPID),
 		Command:     command,
 		CreatedTime: createTime,
-		Status:      container.RUNNING,
+		Status:      driver.RUNNING,
 		Name:        containerName,
 		Volume:      volume,
 	}
@@ -96,14 +97,18 @@ func recordContainerInfo(containerPID int, commandArray []string, containerName,
 	}
 	jsonStr := string(jsonBytes)
 
-	dirUrl := fmt.Sprintf(container.DefaultInfoLocation, containerName)
+
+	dirUrl := fmt.Sprintf(driver.DefaultInfoLocation, containerName)
 	if err := os.MkdirAll(dirUrl, 0622); err != nil {
 		Sugar.Errorf("Mkdir error %s error %v", dirUrl, err)
 		return "", err
 	}
-	fileName := dirUrl + "/" + container.ConfigName
+
+
+	fileName := dirUrl + "/" + driver.ConfigName
 	file, err := os.Create(fileName)
 	defer file.Close()
+
 	if err != nil {
 		Sugar.Errorf("Create file %s error %v", fileName, err)
 		return "", err
@@ -117,7 +122,7 @@ func recordContainerInfo(containerPID int, commandArray []string, containerName,
 }
 
 func deleteContainerInfo(containerId string) {
-	dirURL := fmt.Sprintf(container.DefaultInfoLocation, containerId)
+	dirURL := fmt.Sprintf(driver.DefaultInfoLocation, containerId)
 	if err := os.RemoveAll(dirURL); err != nil {
 		Sugar.Errorf("Remove dir %s error %v", dirURL, err)
 	}

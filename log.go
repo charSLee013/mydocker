@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	"github.com/charSLee013/mydocker/container"
+	"github.com/charSLee013/mydocker/driver"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 	"io/ioutil"
@@ -49,8 +49,8 @@ func InitLog() (*zap.Logger, error) {
 }
 
 func logContainer(containerName string) {
-	dirURL := fmt.Sprintf(container.DefaultInfoLocation)
-	logFileLocation := dirURL + container.ContainerLogFile
+	dirURL := fmt.Sprintf(driver.DefaultInfoLocation, containerName)
+	logFileLocation := dirURL + driver.ContainerLogFile
 
 	file, err := os.Open(logFileLocation)
 	defer file.Close()

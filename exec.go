@@ -3,7 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/charSLee013/mydocker/container"
+	"github.com/charSLee013/mydocker/driver"
 	"io/ioutil"
 	"os"
 	"os/exec"
@@ -14,13 +14,13 @@ const ENV_EXEC_PID = "gocker_pid"
 const ENV_EXEC_CMD = "gocker_cmd"
 
 func GetContainerPidByName(containerName string) (string, error) {
-	dirURL := fmt.Sprintf(container.DefaultInfoLocation, containerName)
-	configFilePath := dirURL + container.ConfigName
+	dirURL := fmt.Sprintf(driver.DefaultInfoLocation, containerName)
+	configFilePath := dirURL + driver.ConfigName
 	contentBytes, err := ioutil.ReadFile(configFilePath)
 	if err != nil {
 		return "", err
 	}
-	var containerInfo container.ContainerInfo
+	var containerInfo driver.ContainerInfo
 	if err := json.Unmarshal(contentBytes, &containerInfo); err != nil {
 		return "", err
 	}

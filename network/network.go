@@ -3,7 +3,7 @@ package network
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/charSLee013/mydocker/container"
+	"github.com/charSLee013/mydocker/driver"
 	"github.com/vishvananda/netlink"
 	"github.com/vishvananda/netns"
 	"go.uber.org/zap"
@@ -188,7 +188,7 @@ func DeleteNetwork(networkName string) error {
 	return nw.remove(defaultNetworkPath)
 }
 
-func enterContainerNetns(enLink *netlink.Link, cinfo *container.ContainerInfo) func() {
+func enterContainerNetns(enLink *netlink.Link, cinfo *driver.ContainerInfo) func() {
 	f, err := os.OpenFile(fmt.Sprintf("/proc/%s/ns/net", cinfo.Pid), os.O_RDONLY, 0)
 	if err != nil {
 		Sugar.Errorf("error get container net namespace, %v", err)
@@ -220,7 +220,7 @@ func enterContainerNetns(enLink *netlink.Link, cinfo *container.ContainerInfo) f
 	}
 }
 
-func configEndpointIpAddressAndRoute(ep *Endpoint, cinfo *container.ContainerInfo) error {
+func configEndpointIpAddressAndRoute(ep *Endpoint, cinfo *driver.ContainerInfo) error {
 	peerLink, err := netlink.LinkByName(ep.Device.PeerName)
 	if err != nil {
 		return fmt.Errorf("fail config endpoint: %v", err)
@@ -258,7 +258,7 @@ func configEndpointIpAddressAndRoute(ep *Endpoint, cinfo *container.ContainerInf
 	return nil
 }
 
-func configPortMapping(ep *Endpoint, cinfo *container.ContainerInfo) error {
+func configPortMapping(ep *Endpoint, cinfo *driver.ContainerInfo) error {
 	for _, pm := range ep.PortMapping {
 		portMapping := strings.Split(pm, ":")
 		if len(portMapping) != 2 {
@@ -278,7 +278,7 @@ func configPortMapping(ep *Endpoint, cinfo *container.ContainerInfo) error {
 	return nil
 }
 
-func Connect(networkName string, cinfo *container.ContainerInfo) error {
+func Connect(networkName string, cinfo *driver.ContainerInfo) error {
 	network, ok := networks[networkName]
 	if !ok {
 		return fmt.Errorf("No Such Network: %s", networkName)
@@ -309,7 +309,7 @@ func Connect(networkName string, cinfo *container.ContainerInfo) error {
 	return configPortMapping(ep, cinfo)
 }
 
-func Disconnect(networkName string, cinfo *container.ContainerInfo) error {
+func Disconnect(networkName string, cinfo *driver.ContainerInfo) error {
 	return nil
 }
 
