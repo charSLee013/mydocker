@@ -2,13 +2,14 @@ package driver
 
 import (
 	"fmt"
-	"go.uber.org/zap"
 	"io/ioutil"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"strings"
 	"syscall"
+
+	"go.uber.org/zap"
 )
 
 var Sugar *zap.SugaredLogger
@@ -22,16 +23,11 @@ func InitLog(sugar *zap.SugaredLogger) {
 func RunContainerInitProcess() error {
 	cmdArray := readUserCommand()
 
-	// 并不是所有容器都需要额外参数
 	if cmdArray == nil || len(cmdArray) == 0 {
 		return fmt.Errorf("Run container get user command error, cmdArray is nil")
 	}
 
 	setUpMount()
-
-	// DEBUG
-	Sugar.Debugf("cmdArray : %v", cmdArray)
-	os.Exit(0)
 
 	path, err := exec.LookPath(cmdArray[0])
 	if err != nil {
@@ -52,9 +48,33 @@ func RunContainerInitProcess() error {
 	// 而该进程的代码段，堆栈都会被新进程给覆盖
 	// 我们通过这种方法，将最初的init进程给覆盖掉
 	// 这也是runC实现方式之一
-	if err := syscall.Exec(path, cmdArray[0:], os.Environ()); err != nil {
+
+	if err := syscall.Exec(path, cmdArray[0:], []string{}); err != nil {
+
 		Sugar.Errorf(err.Error())
+
+		//DEBUG
+		Sugar.Debugf("path [%s]", path)
+
+		for _, v := range os.Environ() {
+			Sugar.Debugf("env : %v", v)
+		}
+
+		Sugar.Debugf("PID : %v", os.Getpid())
+
+		f, err := os.Stat(path)
+		if err != nil {
+			Sugar.Error(err)
+		} else {
+			Sugar.Debug(f.Mode())
+		}
+
+		cmd := exec.Command(path)
+		Sugar.Debug(cmd.Path)
+
+		os.Exit(0)
 	}
+
 	return nil
 }
 
@@ -119,13 +139,11 @@ func pivotRoot(root string) error {
 		return err
 	}
 
-
 	// pivot_root 到新的rootfs, 现在老的 old_root 是挂载在rootfs/.pivot_root
 	// 挂载点现在依然可以在mount命令中看到
 	if err := syscall.PivotRoot(root, pivotDir); err != nil {
 		return fmt.Errorf("pivot_root %v", err)
 	}
-
 
 	// 修改当前的工作目录到根目录
 	if err := syscall.Chdir("/"); err != nil {
@@ -137,7 +155,6 @@ func pivotRoot(root string) error {
 	if err := syscall.Unmount(pivotDir, syscall.MNT_DETACH); err != nil {
 		return fmt.Errorf("unmount pivot_root dir %v", err)
 	}
-
 
 	// 删除临时文件夹
 	return os.Remove(pivotDir)

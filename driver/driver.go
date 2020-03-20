@@ -15,6 +15,10 @@ const (
 
 // 创建一个overlay2的文件系统
 func NewWorkSpace(volume, imageName, layerName string) {
+
+	//DEBUG
+	Sugar.Debugf("New work space in : %v",OverlayDir + layerName)
+
 	if err := CreateReadOnlyLayer(imageName, layerName); err != nil {
 		Sugar.Errorf("create lowerdir %s error %v", layerName+"/lower", err)
 	}
@@ -96,7 +100,7 @@ func copyFile(source, dest string) error {
 	}
 	defer source_open.Close()
 	//只写模式打开文件 如果文件不存在进行创建 并赋予 644的权限。详情查看linux 权限解释
-	dest_open, err := os.OpenFile(dest, os.O_CREATE|os.O_WRONLY, 644)
+	dest_open, err := os.OpenFile(dest, os.O_CREATE|os.O_WRONLY, 0744)
 	if err != nil {
 		return err
 	}
@@ -113,6 +117,7 @@ func copyFile(source, dest string) error {
 
 // 创建并挂载 work,upper,merged
 func CreateWriteLayer(layerName string) error {
+
 	basedir := OverlayDir + layerName
 	lowerdir := basedir + "/lower"
 
@@ -141,6 +146,7 @@ func CreateWriteLayer(layerName string) error {
 		Sugar.Errorf("mount overlay opts : %s error %v", opts, err)
 		return err
 	}
+
 	return nil
 }
 

@@ -65,7 +65,7 @@ var runCommand = cli.Command{
 
 		//get image name
 		imageName := cmdArray[0]
-		cmdArray = cmdArray[1:]
+		//cmdArray = cmdArray[1:]
 
 		createTty := context.Bool("ti")
 		detach := context.Bool("d")
