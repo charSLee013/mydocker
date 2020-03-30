@@ -1,4 +1,9 @@
 # mydocker
+
+---
+
+
+
 `mydocker`是一个简单的`Docker runC`实现
 
 ---
@@ -19,6 +24,7 @@
 ### `v2` 版本介绍
 - [x] 实现`namespace` 隔离
 - [x] 实现`driver`层驱动(目前仅支持`overlay2`
+- [x] 实现了创建容器后,替换`init`进程从而完成容器创建
 
 ### `v3` 版本介绍
 - [ ] TODO
