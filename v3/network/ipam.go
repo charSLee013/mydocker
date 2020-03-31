@@ -22,17 +22,19 @@ var ipAllocator = &IPAM{
 
 
 func (ipam *IPAM) load() error {
-	if _,err := os.Stat(ipam.SubnetAllocatorPath);os.IsNotExist(err) {
-		return nil
-	} else {
-		return err
+	if _,err := os.Stat(ipam.SubnetAllocatorPath);err != nil {
+		if os.IsNotExist(err){
+			return nil
+		} else {
+			return err
+		}
 	}
 
 	subnetConfigFile,err := os.Open(ipam.SubnetAllocatorPath)
-	defer subnetConfigFile.Close()
 	if err != nil {
 		return err
 	}
+	defer subnetConfigFile.Close()
 
 	subnetJson := make([]byte,2000)
 	n,err := subnetConfigFile.Read(subnetJson)
@@ -119,7 +121,7 @@ func (ipam *IPAM) Release(subnet *net.IPNet,ipaddr *net.IP) error {
 
 	_,subnet,err := net.ParseCIDR(subnet.String())
 
-	err := ipam.load()
+	err = ipam.load()
 	if err != nil {
 		log.Printf("Error dump allocation info %v",err)
 	}
@@ -132,7 +134,9 @@ func (ipam *IPAM) Release(subnet *net.IPNet,ipaddr *net.IP) error {
 	}
 
 	ipalloc := []byte((*ipam.Subnets)[subnet.String()])
+
 	ipalloc[c] = '0'
+
 	(*ipam.Subnets)[subnet.String()] = string(ipalloc)
 
 	ipam.dump()

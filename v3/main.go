@@ -1,8 +1,8 @@
 package main
 
 import (
-	"github.com/charSLee013/mydocker/v2/cgroups"
-	"github.com/charSLee013/mydocker/v2/driver"
+	"github.com/charSLee013/mydocker/v3/cgroups"
+	"github.com/charSLee013/mydocker/v3/driver"
 	"github.com/urfave/cli/v2"
 	"go.uber.org/zap"
 	"log"
@@ -23,6 +23,7 @@ func main() {
 	app.Commands = []*cli.Command{
 		&runCommand,
 		&initCommand,
+		&networkCommand,
 	}
 
 	// set logger

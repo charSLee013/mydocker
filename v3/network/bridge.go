@@ -163,3 +163,16 @@ func (d *BridgeNetworkDriver) Connect(network *Network,endpoint *Endpoint) error
 
 	return err
 }
+
+func setInterfaceUP(interfaceName string) error {
+	iface,err := netlink.LinkByName(interfaceName)
+	if err != nil {
+		return fmt.Errorf("Error retrieving a link named [ %s ]:%v",interfaceName,err)
+	}
+
+	if err := netlink.LinkSetUp(iface);err != nil {
+		return fmt.Errorf("Error enabling interface for %s: %v",interfaceName,err)
+	}
+
+	return nil
+}
